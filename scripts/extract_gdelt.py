@@ -32,12 +32,12 @@ def main():
         {
             'name': 'tone_extract',
             'sql_file': sql_dir / 'tone_extract.sql',
-            'output_uri': f'{gcs_bucket}/gdelt_raw/tone&exposure_data.csv'
+            'output_uri': f'{gcs_bucket}/gdelt_raw/tone_exposure_data_*.csv'
         },
         {
             'name': 'themes_extract',
             'sql_file': sql_dir / 'themes_extract.sql',
-            'output_uri': f'{gcs_bucket}/gdelt_raw/themes_data.csv'
+            'output_uri': f'{gcs_bucket}/gdelt_raw/themes_data*.csv'
         }
     ]
     
