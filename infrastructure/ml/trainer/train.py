@@ -38,52 +38,134 @@ def main():
     df = pd.read_csv(f"/gcs/{bucket}/{data_path}")
     df = df.dropna()
 
+    # # features
+    # features = [
+    #     "Open", "High", "Low", "Close", "Volume",
+    #     "daily_return_pct",
+    #     "daily_exposure_count", "daily_avg_tone",
+    #     "day_of_week"
+    # ]
+
+    # results = {}
     # features
-    features = [
+    price_features = [
         "Open", "High", "Low", "Close", "Volume",
         "daily_return_pct",
-        "daily_exposure_count", "daily_avg_tone",
         "day_of_week"
     ]
-
+    
+    sentiment_features = [
+        "daily_exposure_count", "daily_avg_tone"
+    ]
+    
     results = {}
 
+#     for ticker in df["ticker"].unique():
+#         print(f"\nTraining for {ticker}")
+
+#         sub_df = df[df["ticker"] == ticker].sort_values("event_date")
+
+#         X = sub_df[features]
+#         y = sub_df["next_day_close"]
+
+#         split = int(len(sub_df) * 0.8)
+#         X_train, X_test = X.iloc[:split], X.iloc[split:]
+#         y_train, y_test = y.iloc[:split], y.iloc[split:]
+
+#         model = RandomForestRegressor()
+#         model.fit(X_train, y_train)
+
+#         # model prediction
+#         y_pred = model.predict(X_test)
+
+#         # baseline
+#         baseline_pred = X_test["Close"]
+
+#         # evaluate
+#         mae = mean_absolute_error(y_test, y_pred)
+#         baseline_mae = mean_absolute_error(y_test, baseline_pred)
+
+#         print(f"{ticker} Model MAE:", mae)
+#         print(f"{ticker} Baseline MAE:", baseline_mae)
+
+#         results[ticker] = {
+#         "model_mae": mae,
+#         "baseline_mae": baseline_mae
+#     }
+#     print("\nFinal Results:", results)
+#     save_model(model, project_id, output_path)
+
+
+
+# if __name__ == "__main__":
+#     main()
     for ticker in df["ticker"].unique():
-        print(f"\nTraining for {ticker}")
-
+        print(f"\n===== {ticker} =====")
+    
         sub_df = df[df["ticker"] == ticker].sort_values("event_date")
-
-        X = sub_df[features]
+    
         y = sub_df["next_day_close"]
-
+    
         split = int(len(sub_df) * 0.8)
-        X_train, X_test = X.iloc[:split], X.iloc[split:]
+    
         y_train, y_test = y.iloc[:split], y.iloc[split:]
-
-        model = RandomForestRegressor()
-        model.fit(X_train, y_train)
-
-        # model prediction
-        y_pred = model.predict(X_test)
-
+    
+    
         # baseline
-        baseline_pred = X_test["Close"]
-
-        # evaluate
-        mae = mean_absolute_error(y_test, y_pred)
+    
+        baseline_pred = sub_df["Close"].iloc[split:]
         baseline_mae = mean_absolute_error(y_test, baseline_pred)
-
-        print(f"{ticker} Model MAE:", mae)
-        print(f"{ticker} Baseline MAE:", baseline_mae)
-
+    
+    
+        # Linear Regression (price only)
+     
+        X_price = sub_df[price_features]
+        X_train_p, X_test_p = X_price.iloc[:split], X_price.iloc[split:]
+    
+        lr = LinearRegression()
+        lr.fit(X_train_p, y_train)
+    
+        y_lr_pred = lr.predict(X_test_p)
+        lr_mae = mean_absolute_error(y_test, y_lr_pred)
+    
+    
+        # Random Forest (price only)
+    
+        rf_price = RandomForestRegressor(random_state=42)
+        rf_price.fit(X_train_p, y_train)
+    
+        y_rf_price_pred = rf_price.predict(X_test_p)
+        rf_price_mae = mean_absolute_error(y_test, y_rf_price_pred)
+    
+    
+        # Random Forest (price + sentiment)
+    
+        X_sent = sub_df[price_features + sentiment_features]
+        X_train_s, X_test_s = X_sent.iloc[:split], X_sent.iloc[split:]
+    
+        rf_sent = RandomForestRegressor(random_state=42)
+        rf_sent.fit(X_train_s, y_train)
+    
+        y_rf_sent_pred = rf_sent.predict(X_test_s)
+        rf_sent_mae = mean_absolute_error(y_test, y_rf_sent_pred)
+    
+    
+        # Print results
+    
+        print(f"Baseline MAE: {baseline_mae:.4f}")
+        print(f"Linear Regression MAE: {lr_mae:.4f}")
+        print(f"RF (price) MAE: {rf_price_mae:.4f}")
+        print(f"RF (price+sentiment) MAE: {rf_sent_mae:.4f}")
+    
+    
+        # Store results
+    
         results[ticker] = {
-        "model_mae": mae,
-        "baseline_mae": baseline_mae
-    }
-    print("\nFinal Results:", results)
-    save_model(model, project_id, output_path)
-
-
-
-if __name__ == "__main__":
-    main()
+            "baseline_mae": baseline_mae,
+            "linear_regression_mae": lr_mae,
+            "rf_price_mae": rf_price_mae,
+            "rf_price_sentiment_mae": rf_sent_mae
+        }
+    
+    print("\n===== FINAL RESULTS =====")
+    print(results)
