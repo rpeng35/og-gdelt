@@ -64,8 +64,15 @@ class RegressionTrainer:
             df.show(5, truncate=False)
             
             # Define feature and label columns
-            feature_cols = ['company', 'ticker', 'daily_exposure_count', 'daily_avg_tone']
-            label_cols = ['Open', 'High', 'Low', 'Close', 'Volume']
+            # feature_cols = ['company', 'ticker', 'daily_exposure_count', 'daily_avg_tone']
+            # label_cols = ['Open', 'High', 'Low', 'Close', 'Volume']
+            feature_cols = [
+                "Open", "High", "Low", "Close", "Volume",
+                "daily_return_pct", "day_of_week",
+                "daily_exposure_count", "daily_avg_tone"
+            ]
+            label_col = "next_day_close"
+            
             
             # Verify all columns exist
             missing_features = [col_name for col_name in feature_cols if col_name not in df.columns]
