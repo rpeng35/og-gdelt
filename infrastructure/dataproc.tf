@@ -23,14 +23,13 @@ resource "google_dataproc_cluster" "og_gdelt_cluster" {
 
   cluster_config {
     # Uses the bucket created in gcs.tf for temporary staging
-    staging_bucket = google_storage_bucket.main_data.name
-    temp_bucket    = google_storage_bucket.main_data.name
+    staging_bucket = google_storage_bucket.dataproc_logs.name
+    temp_bucket    = google_storage_bucket.dataproc_logs.name
 
     master_config {
       num_instances = 1 # initial number of master nodes
       machine_type  = "e2-standard-4"
       disk_config {
-        # boot_disk_type    = "pd-ssd"
         boot_disk_size_gb = 30 # Keeps storage costs minimal (GBs)
       }
     }
@@ -39,12 +38,10 @@ resource "google_dataproc_cluster" "og_gdelt_cluster" {
       num_instances = 2 # Initial number of worker nodes
       machine_type  = "e2-standard-4"
       disk_config {
-        # boot_disk_type    = "pd-ssd"
         boot_disk_size_gb = 30
       }
     }
 
-    # Links to the custom network created in network.tf
     gce_cluster_config {
       subnetwork = google_compute_subnetwork.custom_subnet.id
     }
