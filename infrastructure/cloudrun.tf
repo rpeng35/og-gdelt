@@ -1,5 +1,5 @@
 locals {
-  registry_name = "${local.name_prefix}-api"
+  registry_name = "og-gdelt-api"
   cloud_run_anme = "${local.name_prefix}-cloudrun-api"
 }
 
