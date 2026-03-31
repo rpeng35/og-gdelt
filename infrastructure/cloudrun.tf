@@ -14,20 +14,22 @@ data "google_artifact_registry_docker_image" "gdelt_api" {
   image_name    = var.latest_cloudrun_image_name
 }
 
-resource "google_cloud_run_service" "gdelt_api" {
+resource "google_cloud_run_v2_service" "gdelt_api" {
   name     = local.cloud_run_anme
   location = var.gcp_region
+  deletion_protection = false
+  ingress = "INGRESS_TRAFFIC_ALL"
 
   template {
-    spec {
-      containers {
-        image = data.google_artifact_registry_docker_image.gdelt_api.image_uri
+    health_check_disabled = true
+    containers {
+      image = data.google_artifact_registry_docker_image.gdelt_api.self_link
+      resources {
+        limits = {
+          cpu    = "2"
+          memory = "1024Mi"
+        }
       }
     }
-  }
-
-  traffic {
-    percent         = 100
-    latest_revision = true
   }
 }
