@@ -28,3 +28,9 @@ variable "training_data_path" {
   type        = string
   default     = "cleaned_data/combined_data_clean_000000000000.csv"
 }
+
+variable "latest_cloudrun_image_name" {
+  description = "Name of the latest Cloud Run image in Artifact Registry"
+  type        = string
+  default     = "og-gdelt-api:latest"
+}
