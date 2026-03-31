@@ -99,12 +99,14 @@ class DataExtractor:
         with open(template_path, 'r') as f:
             template = f.read()
         
+        company_regex=f"{company_name.lower()}|{ticker.lower()}"
+
         # Fill in parameters
         query = template.format(
             company_name=company_name,
             start_date=start_date.strftime('%Y-%m-%d'),
             end_date=end_date.strftime('%Y-%m-%d'),
-            company_regex=self._get_company_regex(company_name)
+            company_regex=company_regex
         )
         
         # Export to GCS
@@ -306,19 +308,3 @@ class DataExtractor:
         )
         load_job.result()
         logger.info(f"Loaded {gcs_path} to {table_ref}")
-    
-    def _get_company_regex(self, company_name: str) -> str:
-        """
-        Get regex pattern for company matching.
-        Can be enhanced with more sophisticated mapping.
-        """
-        # Simple mapping - can be expanded
-        company_patterns = {
-            'tesla': r'tesla|tsla',
-            'amazon': r'amazon|amzn',
-            'apple': r'apple|aapl',
-            'pfizer': r'pfizer|pfe',
-            'aramco': r'aramco|saudi aramco|saudi arabian oil'
-        }
-        
-        return company_patterns.get(company_name.lower(), company_name.lower())
